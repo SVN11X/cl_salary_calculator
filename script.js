@@ -1,13 +1,51 @@
 // ==============================================
 // VARIABLES DE CONFIGURACIÓN (ACTUALIZABLES)
 // ==============================================
-const CONFIG = {
-    UF: 37850.25,                // Valor UF a Abril 2026 (ejemplo)
-    UTM: 66250.00,               // Valor UTM Abril 2026 (ejemplo)
-    TOPE_IMPONIBLE_UF: 84.3,     // Tope imponible en UF (AFP y salud)
-    TASA_CESANTIA: 0.006,        // 0.6%
-    TASA_FONASA: 0.07,           // 7%
+let CONFIG = {
+    UF: 37850.25,        // valor de respaldo si falla la API
+    UTM: 66250.00,       // valor de respaldo
+    TOPE_IMPONIBLE_UF: 84.3,
+    TASA_CESANTIA: 0.006,
+    TASA_FONASA: 0.07,
 };
+
+async function actualizarIndicadores() {
+    const statusSpan = document.getElementById('indicadorStatus');
+    if (statusSpan) statusSpan.textContent = '🔄 Actualizando UF/UTM...';
+    
+    try {
+        const [resUF, resUTM] = await Promise.all([
+            fetch('https://mindicador.cl/api/uf'),
+            fetch('https://mindicador.cl/api/utm')
+        ]);
+        const dataUF = await resUF.json();
+        const dataUTM = await resUTM.json();
+        
+        if (dataUF.serie && dataUF.serie[0] && dataUTM.serie && dataUTM.serie[0]) {
+            CONFIG.UF = dataUF.serie[0].valor;
+            CONFIG.UTM = dataUTM.serie[0].valor;
+            
+            const fechaUF = new Date(dataUF.serie[0].fecha).toLocaleDateString('es-CL');
+            if (statusSpan) statusSpan.innerHTML = `📊 UF: ${formatCLP(CONFIG.UF)} (${fechaUF}) | UTM: ${formatCLP(CONFIG.UTM)}`;
+            
+            const ufValueSpan = document.getElementById('ufValueDisplay');
+            if (ufValueSpan) ufValueSpan.textContent = formatCLP(CONFIG.UF);
+            
+            // Si ya hay un sueldo ingresado, recalcula automáticamente
+            const sueldoInput = document.getElementById('sueldoBruto');
+            if (sueldoInput && parseCLP(sueldoInput.value) > 0) {
+                calcularLiquido();
+            }
+            return true;
+        } else {
+            throw new Error('Datos incompletos');
+        }
+    } catch (error) {
+        console.warn('Error obteniendo indicadores:', error);
+        if (statusSpan) statusSpan.innerHTML = '⚠️ Usando valores de respaldo (UF/UTM manuales)';
+        return false;
+    }
+}
 
 // Lista de AFP actualizada a 2026 (comisiones referenciales)
 const AFP_LIST = [
@@ -221,8 +259,10 @@ function calcularLiquido() {
 // ==============================================
 document.addEventListener('DOMContentLoaded', () => {
     inicializarUI();
+    actualizarIndicadores();               // ← nueva línea
+    setInterval(actualizarIndicadores, 6 * 60 * 60 * 1000); // ← nueva línea (actualiza cada 6h)
     toggleSalud();
-    // Valor inicial de ejemplo
+
     sueldoInput.value = '1.500.000';
     calcularLiquido();
 });
