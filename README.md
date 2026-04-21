@@ -23,13 +23,3 @@ Aplicación web **minimalista y mobile-first** para calcular el sueldo líquido 
 | 🏥 **Salud Flexible** | Fonasa (7%) o Isapre con plan pactado en UF. |
 | 📊 **Desglose Detallado** | AFP, Salud, Cesantía, Base Tributable, Impuesto y Líquido final. |
 | ⚙️ **Variables Configurables** | UF, UTM, Tope Imponible y tramos de impuesto editables en `script.js`. |
-
----
-
-## 🚀 Despliegue Rápido en GitHub Pages
-
-1. **Haz un fork** de este repositorio o súbelo a tu cuenta.
-2. Ve a `Settings > Pages`.
-3. En **Source** selecciona `Deploy from a branch` y elige la rama `main` (o `master`).
-4. La carpeta raíz (`/`) contiene el `index.html`. Guarda los cambios.
-5. En pocos segundos tu sitio estará disponible en:
