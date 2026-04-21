@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="es-CL" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>Calculadora Líquido Chile 2026 | SaaS</title>
+    <!-- Tailwind CSS v3 + Fuente Inter -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz@14..32&display=swap" rel="stylesheet">
+    <style>
+        * { font-family: 'Inter', sans-serif; }
+        /* Transiciones suaves para el modo oscuro */
+        .transition-theme { transition: background-color 0.2s ease, border-color 0.2s ease; }
+        /* Ocultar flechas en input number */
+        input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+        input[type=number] { -moz-appearance: textfield; appearance: textfield; }
+    </style>
+    <script>
+        // Detección de tema inicial (respeta preferencia del sistema)
+        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark')
+        } else {
+            document.documentElement.classList.remove('dark')
+        }
+    </script>
+</head>
+<body class="bg-slate-50 dark:bg-slate-900 transition-theme antialiased">
+
+    <main class="min-h-screen flex items-center justify-center p-4">
+        <div class="w-full max-w-md">
+            <!-- Cabecera con switch de tema -->
+            <div class="flex justify-between items-center mb-6">
+                <h1 class="text-2xl font-bold text-slate-800 dark:text-white tracking-tight">
+                    💸 Sueldo Líquido <span class="text-indigo-600 dark:text-indigo-400">CL 2026</span>
+                </h1>
+                <button id="themeToggle" class="p-2 rounded-lg bg-white dark:bg-slate-800 shadow-sm border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition">
+                    <span class="block dark:hidden">🌙</span>
+                    <span class="hidden dark:block">☀️</span>
+                </button>
+            </div>
+
+            <!-- Tarjeta principal -->
+            <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 overflow-hidden transition-theme">
+                <div class="p-6 space-y-6">
+                    <!-- 1. Sueldo Bruto -->
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+                            Sueldo Bruto (CLP)
+                        </label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-3 flex items-center text-slate-500 dark:text-slate-400">$</span>
+                            <input type="text" id="sueldoBruto" placeholder="1.000.000" 
+                                   class="w-full pl-8 pr-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-lg font-medium text-slate-900 dark:text-white placeholder:text-slate-400 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition">
+                        </div>
+                        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Formato: 1.500.000</p>
+                    </div>
+
+                    <!-- 2. Selección de AFP -->
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+                            AFP (% Comisión)
+                        </label>
+                        <select id="afpSelect" class="w-full p-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500 outline-none">
+                            <!-- Las opciones se llenan dinámicamente desde JS -->
+                        </select>
+                        <div class="mt-2 flex items-center gap-2">
+                            <input type="number" id="afpCustom" step="0.01" min="0" max="100" placeholder="% personalizado" 
+                                   class="w-32 p-2 text-sm bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-1 focus:ring-indigo-500 outline-none">
+                            <span class="text-sm text-slate-500 dark:text-slate-400">%</span>
+                        </div>
+                    </div>
+
+                    <!-- 3. Salud -->
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+                            Sistema de Salud
+                        </label>
+                        <div class="flex gap-4 mb-3">
+                            <label class="flex items-center gap-2">
+                                <input type="radio" name="salud" value="fonasa" checked class="accent-indigo-600 w-4 h-4">
+                                <span class="text-slate-700 dark:text-slate-300">Fonasa (7%)</span>
+                            </label>
+                            <label class="flex items-center gap-2">
+                                <input type="radio" name="salud" value="isapre" class="accent-indigo-600 w-4 h-4">
+                                <span class="text-slate-700 dark:text-slate-300">Isapre (UF)</span>
+                            </label>
+                        </div>
+                        <div id="isapreInput" class="hidden">
+                            <label class="block text-xs text-slate-500 dark:text-slate-400 mb-1">Plan en UF</label>
+                            <input type="number" id="ufIsapre" step="0.01" min="0" placeholder="Ej: 2.5" 
+                                   class="w-full p-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg">
+                            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                                Valor UF: <span id="ufValueDisplay">$37.500</span> (editable en script)
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- 4. Seguro de Cesantía -->
+                    <div class="bg-slate-100 dark:bg-slate-900/50 p-4 rounded-xl">
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm font-medium text-slate-700 dark:text-slate-300">Seguro de Cesantía</span>
+                            <span class="text-sm font-semibold text-slate-900 dark:text-white">0.6%</span>
+                        </div>
+                        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Aporte obligatorio trabajador indefinido</p>
+                    </div>
+
+                    <!-- Botón Calcular (aunque es automático, damos feedback) -->
+                    <button id="calcularBtn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-3 px-4 rounded-xl transition shadow-lg shadow-indigo-200 dark:shadow-none">
+                        Calcular Líquido
+                    </button>
+
+                    <!-- Resultados -->
+                    <div id="resultados" class="space-y-4 border-t border-slate-200 dark:border-slate-700 pt-5 hidden">
+                        <h2 class="text-lg font-semibold text-slate-800 dark:text-white">🧾 Desglose</h2>
+                        
+                        <div class="space-y-3 text-sm">
+                            <div class="flex justify-between">
+                                <span class="text-slate-600 dark:text-slate-400">Sueldo Bruto</span>
+                                <span id="resBruto" class="font-medium text-slate-900 dark:text-white">$0</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-slate-600 dark:text-slate-400">AFP</span>
+                                <span id="resAfp" class="font-medium text-red-600 dark:text-red-400">-$0</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-slate-600 dark:text-slate-400">Salud</span>
+                                <span id="resSalud" class="font-medium text-red-600 dark:text-red-400">-$0</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-slate-600 dark:text-slate-400">Seguro Cesantía</span>
+                                <span id="resCesantia" class="font-medium text-red-600 dark:text-red-400">-$0</span>
+                            </div>
+                            <div class="flex justify-between border-t border-slate-200 dark:border-slate-700 pt-3 mt-1">
+                                <span class="font-semibold text-slate-700 dark:text-slate-300">Base Tributable</span>
+                                <span id="resBaseTributable" class="font-semibold text-slate-900 dark:text-white">$0</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-slate-600 dark:text-slate-400">Impuesto Único</span>
+                                <span id="resImpuesto" class="font-medium text-red-600 dark:text-red-400">-$0</span>
+                            </div>
+                            <div class="flex justify-between text-base font-bold pt-2 border-t border-slate-200 dark:border-slate-700">
+                                <span class="text-slate-800 dark:text-white">Líquido a Recibir</span>
+                                <span id="resLiquido" class="text-indigo-600 dark:text-indigo-400">$0</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <p class="text-xs text-center text-slate-400 dark:text-slate-500 mt-2">
+                        Cálculos referenciales según legislación 2026. <br>Valores UF/UTM editables en script.js
+                    </p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>
