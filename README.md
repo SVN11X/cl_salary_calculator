@@ -6,7 +6,7 @@
 
 Aplicación web **minimalista y mobile-first** para calcular el sueldo líquido mensual en Chile, cumpliendo con la legislación vigente a **2026**. Incluye desglose detallado de AFP, salud (Fonasa/Isapre), seguro de cesantía e impuesto único de segunda categoría.
 
-🔗 **[Ver Demo en GitHub Pages](https://tuusuario.github.io/calculadora-sueldo-liquido-chile/)**
+🔗 **[Ver Demo en GitHub Pages](https://github.com/SVN11X/cl_salary_calculator/)**
 
 ![Preview Light/Dark](https://via.placeholder.com/800x400?text=Captura+Modo+Claro+Oscuro)
 
